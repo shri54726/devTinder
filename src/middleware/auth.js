@@ -1,19 +1,29 @@
-const adminAuth  = (req, res, next)=>{
-        const token = 'abc';
-        if(token == 'abc'){
-            next();
-        }else{
-            res.status(401).send('Admin Not Authorized')
-        }
-    }
+const jwt = require('jsonwebtoken');
+const User = require('../models/user')
 
-    const userAuth  = (req, res, next)=>{
-        const token = 'abc';
-        if(token == 'abc'){
-            next();
-        }else{
-            res.status(401).send('User Not Authorized')
-        }
-    }
 
-module.exports = { adminAuth, userAuth };
+const userAuth  = async(req, res, next)=>{
+    try {
+        // Read the token from req.
+        const { token } = req.cookies;
+
+        if(!token){
+            throw new Error('Invalid Token')
+        }
+
+        //Verify The token
+        const decodedToken = await jwt.verify(token, 'test_key')
+
+        const user = await User.findById({_id: decodedToken._id})
+        if(!user){
+            throw new Error('User Not Found');
+        }
+        req.user = user;
+
+        next();
+    } catch (error) {
+        res.status(400).send('Error: '+ error.message);
+    }
+}
+
+module.exports = { userAuth };
