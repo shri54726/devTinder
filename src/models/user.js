@@ -83,7 +83,7 @@ UserSchema.methods.getJWT = async function(){
 UserSchema.methods.validatePassword = function(passwordInputByUser){
     const user = this;
     const passwordHash = user.password;
-    const isPassValid = bcrypt.compare(passwordInputByUser, user.password);
+    const isPassValid = bcrypt.compare(passwordInputByUser, passwordHash);
     return isPassValid;
 }
 

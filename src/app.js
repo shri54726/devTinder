@@ -10,75 +10,89 @@ const jwt = require('jsonwebtoken');
 
 
 const app = express();
-app.use(express.json())
+app.use(express.json());
 app.use(cookieParser());
+
+const path = require('path');
+app.use(userAuth)
+const autoRoutes = require('express-auto-routes')(app); // you don't need `routes` folder any more
+autoRoutes(path.join(__dirname, './controllers')); // auto mounting... done!
+
+
 
 const port = 3000;
 
-app.post('/signup', async (req,res)=>{
-    try {
-        // Validate Data
-        validateSignUp(req.body);
 
-        // Encrypt Password
-        const {firstName, lastName, emailId, password} = req.body;
+// app.get('/getUserByEmail', async (req, res)=>{
 
-        const hashPassword = await bcrypt.hash(password, 10);
+//     const userEmail = req.query.email;
+//     try {
+//         const user = await User.findOne({emailId: userEmail}).exec();
+//         if(!user){
+//             res.status(404).send('user not found')
+//         }else{
+//             res.send(user)
+//         }
+//         // const user = await User.find({emailId: userEmail});
+//         // if(user.length === 0){
+//         //     res.status(404).send('user not found')
+//         // }else{
+//         //     res.send(user)
+//         // }
+//     } catch (error) {
+//         res.status(400).send("Error while getting user data "+ error )
+//     }
+// });
 
-        const user = new User({
-            firstName, lastName, emailId, password: hashPassword
-        });
-    
-        await user.save();
-    
-        res.send('User Added Successfully');
-    } catch (error) {
-        res.status(400).send("Error while saving "+ error )
-    }
-});
+
+// app.get('/getAllUser', async (req, res)=>{
+//     try {
+//         const user = await User.find({});
+//         if(user.length === 0){
+//             res.status(404).send('users not found')
+//         }else{
+//             res.send(user)
+//         }
+//     } catch (error) {
+//         res.status(400).send("Error while getting user data "+ error )
+//     }
+// });
+
+// app.delete('/deleteUserById', async (req, res)=>{
+//     const userId = req.body.userId;
+//     try {
+//         const user = await User.findByIdAndDelete({_id: userId});
+//         res.send('user deleted')
+//     } catch (error) {
+//         res.status(400).send("user not deleted")
+//     }
+
+// });
 
 
-app.post('/login', async (req, res)=>{
-    try {
-        const {emailId, password} = req.body;
-        if(!validator.isEmail(emailId)){
-            throw new Error('Invalid credentials');
-        }
-        const isUserAvailable = await User.findOne({emailId:emailId});
+// app.patch('/updateUserById', async (req, res)=>{
+//     const userId = req.query.userId;
+//     const data = req.body;
+//     try {
+//         const AllowedKeys = ['userId','gender','skills','photoUrl']
 
-        if(!isUserAvailable){
-            throw new Error('Invalid credentials');
-        }
+//         const isUpdateAllowed = Object.keys(data).every((k)=>AllowedKeys.includes(k));
 
-        const isValidPassword = await isUserAvailable.validatePassword(password)
-        if(!isValidPassword){
-            throw new Error('Invalid credentials');
-        }  
+//         if(!isUpdateAllowed){
+//             throw new Error('Update is not allowed');
+//         }
 
-        const token = await isUserAvailable.getJWT();
+//         if(data.skills.length>10){
+//             throw new Error('Skills should not exceed 10');
+//         }
 
-        res.cookie('token', token,{ expires: new Date(Date.now() + 1 + 900000)})
-        res.send("You have been logged in...");
+//         const user = await User.findByIdAndUpdate({_id:userId}, data, {returnDocument: 'after', runValidators: true});
+//         res.send(user)
+//     } catch (error) {
+//         res.status(400).send("user not updated " + error)
+//     }
 
-    } catch (error) {
-        res.status(400).send('somthing went wrong: '+error);
-    }
-});
-
-app.get('/getProfile', userAuth, async(req, res)=>{
-   try {
-    const user = req.user;
-
-    res.send(user)
-   } catch (error) {
-        res.status(400).send('somthing went wrong: '+error);
-   }
-})
-
-app.post('/getConnectionRequest', userAuth, async (req, res)=>{
-    const user = req.user;
-    res.send(user.firstName+' sent a coneection request!');
-})
+// });
 
 
 connectDB().then(()=>{
@@ -89,3 +103,4 @@ connectDB().then(()=>{
 }).catch(err=>{
     console.log('Database Ccnnection Unsuccessful..')
 })
+
