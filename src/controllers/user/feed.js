@@ -5,7 +5,7 @@ exports.get = async function (req, res) {
     try {
         const user = req.user;
         const page = req.query.page || 1;
-        const limit = req.query.limit || 10;
+        let limit = req.query.limit || 10;
         limit = limit > 50 ? 50 : limit;
         const skip = (page-1)*limit;
         const connectRequest = await ConnectionRequestModel.find({
