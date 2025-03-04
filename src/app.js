@@ -20,7 +20,7 @@ autoRoutes(path.join(__dirname, './controllers')); // auto mounting... done!
 
 
 
-const port = 3000;
+const port = 3001;
 
 
 // app.get('/getUserByEmail', async (req, res)=>{
